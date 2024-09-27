@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.geom.Ellipse2D;
+import java.time.LocalDate;
 
 public class Main extends JFrame {
 
@@ -131,7 +132,7 @@ public class Main extends JFrame {
     }
 
     private JPanel createPredictionPanel() {
-        return new PredictionPanel(); // Create and return PredictionPanel
+        return new PredictionPanel();
     }
 
     private JPanel createSettingsPanel() {

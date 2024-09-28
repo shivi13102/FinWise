@@ -21,6 +21,7 @@ public class PredictionPanel extends JPanel {
     private JLabel monthYearLabel;
     private ChartPanel chartPanel;
     private ChartPanel predictionChartPanel;
+    private ChartPanel lineChartPanel;
 
     public PredictionPanel() {
         setLayout(new BorderLayout());
@@ -98,6 +99,15 @@ public class PredictionPanel extends JPanel {
 
         // Add the scroll pane to the PredictionPanel
         add(mainScrollPane, BorderLayout.CENTER);
+
+        // Initialize the line chart panel with an empty chart
+        lineChartPanel = new ChartPanel(createLineChart(new DefaultCategoryDataset())); // Pass an empty dataset initially
+        lineChartPanel.setPreferredSize(new Dimension(300, 300)); // Set height for the line chart
+        lineChartPanel.setBorder(BorderFactory.createEmptyBorder()); // Remove border
+
+        predictionPanel.add(predictionChartPanel); // Add the prediction chart panel
+        predictionPanel.add(lineChartPanel); // Add the line chart panel
+
 
         // Fetch data and populate the main expense table
         try {
@@ -225,9 +235,11 @@ public class PredictionPanel extends JPanel {
             predictionTableModel.addRow(new Object[]{category, String.format("%.2f", predictedAverage)});
         }
 
-        // After populating the prediction table, update the prediction bar chart
+        // After populating the prediction table, update the prediction bar chart and line chart
         updatePredictionBarChart();
+        updateLineChart(monthlyExpenses);
     }
+
 
     private JFreeChart createPredictionBarChart(DefaultCategoryDataset dataset) {
         // Create the prediction chart with the provided dataset
@@ -270,4 +282,55 @@ public class PredictionPanel extends JPanel {
         predictionChartPanel.revalidate();
         predictionChartPanel.repaint();
     }
+
+    private JFreeChart createLineChart(DefaultCategoryDataset dataset) {
+        // Create the line chart with the provided dataset
+        JFreeChart lineChart = ChartFactory.createLineChart(
+                "Monthly Expense Comparison",    // Chart title
+                "Category",                      // X-axis label
+                "Expense",                       // Y-axis label
+                dataset,                         // Dataset
+                PlotOrientation.VERTICAL,        // Plot orientation
+                true,                            // Include legend
+                true,                            // Tooltips
+                false                            // URLs
+        );
+
+        // Customize the line colors
+        lineChart.getCategoryPlot().getRenderer().setSeriesPaint(0, new Color(34, 82, 179)); // Current month (light blue)
+        lineChart.getCategoryPlot().getRenderer().setSeriesPaint(1, new Color(34, 179, 82)); // Next month (light green)
+
+        return lineChart;
+    }
+
+    private void updateLineChart(Map<String, ExpenseDataFetcher.CategoryExpense> monthlyExpenses) {
+        // Create a dataset for the line chart
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        // List of categories to display
+        String[] categories = {"Food & Drinks", "Shopping", "Bills & Utilities", "Others"};
+
+        // Populate the dataset with average expenses for the current month
+        for (String category : categories) {
+            ExpenseDataFetcher.CategoryExpense expense = monthlyExpenses.getOrDefault(category, new ExpenseDataFetcher.CategoryExpense(0.0, 0));
+            double average = expense.getAverage();
+            dataset.addValue(average, "Current Month", category);
+        }
+
+        // Populate the dataset with predicted averages for the next month
+        for (int i = 0; i < categories.length; i++) {
+            String category = categories[i];
+            double predictedAverage = Double.parseDouble(predictionTableModel.getValueAt(i, 1).toString());
+            dataset.addValue(predictedAverage, "Next Month", category);
+        }
+
+        // Update the line chart's dataset by creating a new chart with updated data
+        JFreeChart lineChart = createLineChart(dataset);
+
+        // Refresh the line chart panel with the new chart
+        lineChartPanel.setChart(lineChart);
+        lineChartPanel.revalidate();
+        lineChartPanel.repaint();
+    }
+
 }

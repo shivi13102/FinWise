@@ -1,10 +1,7 @@
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -28,6 +25,9 @@ public class DashboardPanel extends JPanel {
     private JLabel foodAndDrinksLabel;
     private JLabel billsAndUtilitiesLabel;
     private JLabel othersLabel;
+    private JTextField balanceTextField;  // Text field for entering balance
+    private double bankBalance = 0.00; // New field to store the bank balance
+
 
     // Category totals
     private double balanceTotal = 0.00;
@@ -61,6 +61,7 @@ public class DashboardPanel extends JPanel {
         String currentMonth = new SimpleDateFormat("MMMM").format(Calendar.getInstance().getTime());
         loadExpensesForMonth(currentMonth);
     }
+
 
     private JPanel createDashboardPanel() {
         JPanel dashboardPanel = new JPanel();
@@ -105,30 +106,61 @@ public class DashboardPanel extends JPanel {
         transactionsPanel.setBackground(Color.WHITE);
         transactionsPanel.setLayout(new BorderLayout());
 
-        // Panel for the total balance
+        // Panel for the total balance and month selector
         JPanel balancePanel = new JPanel();
         balancePanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
+        // Label for balance
         JLabel balanceLabel = new JLabel("Total Balance in the Bank Account:");
         balanceLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        balancePanel.add(balanceLabel);
 
-        JTextField totalBalanceField = new JTextField(20);
-        totalBalanceField.setText(String.format("Rs. %.2f", balanceTotal));
-        totalBalanceField.setFont(new Font("Arial", Font.PLAIN, 16));
-        balancePanel.add(totalBalanceField);
+        // Input field for entering balance
+        balanceTextField = new JTextField(10);
+        balanceTextField.setFont(new Font("Arial", Font.PLAIN, 16));
 
-        // JComboBox for selecting month
+        // Update balance button
+        JButton updateBalanceButton = new JButton("Update Balance");
+
+        // Label for month selection
         JLabel monthLabel = new JLabel("Select Month:");
         monthLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        balancePanel.add(monthLabel);
 
+        // JComboBox for selecting month
         JComboBox<String> monthComboBox = new JComboBox<>(new String[] {
                 "January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December"
         });
+        monthComboBox.setFont(new Font("Arial", Font.PLAIN, 16));
+
+        // Add components to the panel
+        balancePanel.add(balanceLabel);
+        balancePanel.add(balanceTextField);
+        balancePanel.add(updateBalanceButton);
+        balancePanel.add(monthLabel);
         balancePanel.add(monthComboBox);
-        // Add action listener
+
+        // Add the action listener for the update balance button
+        updateBalanceButton.addActionListener(e -> {
+            try {
+                // Update bank balance with the input balance
+                bankBalance = Double.parseDouble(balanceTextField.getText().replace(",", ".")); // Store the current balance
+
+                // Update the total balance
+                balanceTotal += bankBalance;
+
+                // Optionally, update dashboard labels or any other UI component
+                updateDashboardLabels();
+
+                // Clear the input field after updating
+                balanceTextField.setText("");
+
+            } catch (NumberFormatException ex) {
+                // Show an error dialog if the input is not a valid number
+                JOptionPane.showMessageDialog(transactionsPanel, "Invalid balance format. Please enter a valid number.");
+            }
+        });
+
+        // Add action listener for month selection
         monthComboBox.addActionListener(e -> {
             String selectedMonth = (String) monthComboBox.getSelectedItem();
             if (selectedMonth != null) {
@@ -166,18 +198,9 @@ public class DashboardPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(table);
         transactionsPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Update balance in the card and field
-        totalBalanceField.addActionListener(e -> {
-            try {
-                balanceTotal = Double.parseDouble(totalBalanceField.getText().replace(",", ".").replace("Rs. ", ""));
-                updateDashboardLabels();
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(transactionsPanel, "Invalid balance format. Please enter a valid number.");
-            }
-        });
-
         return transactionsPanel;
     }
+
 
     private JPanel createAddExpenditurePanel() {
         JPanel addExpenditurePanel = new JPanel();
@@ -298,6 +321,8 @@ public class DashboardPanel extends JPanel {
         updateDashboard(category, sum);
         updateTable(purpose, category, sum, date);
     }
+
+
 
     private void updateDashboard(String category, double amount) {
         switch (category) {

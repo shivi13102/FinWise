@@ -2,7 +2,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.geom.Ellipse2D;
-import java.time.LocalDate;
 
 public class Main extends JFrame {
 
@@ -25,13 +24,11 @@ public class Main extends JFrame {
 
         contentPanel.add(new DashboardPanel(), "Dashboard");
         contentPanel.add(createReportPanel(), "Report");
-        contentPanel.add(createBillsAndDatesPanel(), "Bills & Dates");
-        contentPanel.add(createPredictionPanel(), "Prediction"); // Add Prediction panel
+        contentPanel.add(new BillsAndDatesPanel(this), "Bills & Dates");
+        contentPanel.add(createPredictionPanel(), "Prediction");
         contentPanel.add(createSettingsPanel(), "Setting");
 
         add(contentPanel, BorderLayout.CENTER);
-
-        // Set default panel to display
         cardLayout.show(contentPanel, "Dashboard");
     }
 
@@ -41,11 +38,9 @@ public class Main extends JFrame {
         sidebar.setPreferredSize(new Dimension(250, 800));
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
 
-        // Profile section
-        ImageIcon profileIcon = new ImageIcon("E:/SEMESTER SUBJECTS/3rd SEMESTER/ADVANCE OOPS/MINI PROJECT/budget_app/Photos/user.png"); // Replace with your image path
+        ImageIcon profileIcon = new ImageIcon("E:/SEMESTER SUBJECTS/3rd SEMESTER/ADVANCE OOPS/MINI PROJECT/budget_app/Photos/user.png");
         Image profileImage = profileIcon.getImage();
 
-        // Resize and crop the image to a circle
         int diameter = 150;
         BufferedImage circleBuffer = new BufferedImage(diameter, diameter, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = circleBuffer.createGraphics();
@@ -58,7 +53,6 @@ public class Main extends JFrame {
         userProfile.setAlignmentX(Component.CENTER_ALIGNMENT);
         sidebar.add(userProfile);
 
-        // Add the name below the image
         userNameLabel = new JLabel("Name", SwingConstants.CENTER);
         userNameLabel.setForeground(Color.WHITE);
         userNameLabel.setFont(new Font("Arial", Font.BOLD, 20));
@@ -71,11 +65,9 @@ public class Main extends JFrame {
         userIDLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         sidebar.add(userIDLabel);
 
-        // Add a gap between the role label and menu items
-        sidebar.add(Box.createVerticalStrut(20)); // 20 pixels gap
+        sidebar.add(Box.createVerticalStrut(20));
 
-        // Sidebar menu items
-        String[] menuItems = {"Dashboard", "Report", "Bills & Dates", "Prediction", "Setting"}; // Add Prediction here
+        String[] menuItems = {"Dashboard", "Report", "Bills & Dates", "Prediction", "Setting"};
         for (String item : menuItems) {
             JButton button = new JButton(item);
             button.setForeground(Color.WHITE);
@@ -106,13 +98,11 @@ public class Main extends JFrame {
             sidebar.add(button);
         }
 
-        // Add a gap between menu items and the image
-        sidebar.add(Box.createVerticalStrut(20)); // 20 pixels gap (adjust as needed)
+        sidebar.add(Box.createVerticalStrut(20));
 
-        // Add the image below the menu
-        ImageIcon imageIcon = new ImageIcon("E:/SEMESTER SUBJECTS/3rd SEMESTER/ADVANCE OOPS/MINI PROJECT/budget_app/Photos/Saving_money.jpg"); // Replace with your image path
+        ImageIcon imageIcon = new ImageIcon("E:/SEMESTER SUBJECTS/3rd SEMESTER/ADVANCE OOPS/MINI PROJECT/budget_app/Photos/Saving_money.jpg");
         Image originalImage = imageIcon.getImage();
-        Image resizedImage = originalImage.getScaledInstance(200, 320, Image.SCALE_SMOOTH); // Adjust size as needed
+        Image resizedImage = originalImage.getScaledInstance(200, 320, Image.SCALE_SMOOTH);
         JLabel imageLabel = new JLabel(new ImageIcon(resizedImage));
         imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         sidebar.add(imageLabel);
@@ -124,13 +114,6 @@ public class Main extends JFrame {
         return new ReportPanel();
     }
 
-    private JPanel createBillsAndDatesPanel() {
-        JPanel panel = new JPanel();
-        panel.setBackground(Color.WHITE);
-        panel.add(new JLabel("Bills & Dates Content"));
-        return panel;
-    }
-
     private JPanel createPredictionPanel() {
         return new PredictionPanel();
     }
@@ -139,7 +122,6 @@ public class Main extends JFrame {
         return new SettingsPanel(this);
     }
 
-    // Methods to update the sidebar labels
     public void updateUserName(String name) {
         userNameLabel.setText(name);
     }

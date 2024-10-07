@@ -8,12 +8,12 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Properties;
+import java.util.*;
 import java.sql.Date;
-import java.util.Calendar;
+import java.util.Timer;
 
 class DateLabelFormatter extends JFormattedTextField.AbstractFormatter {
-    private String datePattern = "yyyy-MM-dd"; // Set your desired date format
+    private String datePattern = "yyyy-MM-dd";
     private SimpleDateFormat dateFormatter = new SimpleDateFormat(datePattern);
 
     @Override
@@ -24,7 +24,6 @@ class DateLabelFormatter extends JFormattedTextField.AbstractFormatter {
     @Override
     public String valueToString(Object value) throws ParseException {
         if (value != null) {
-            // Check if value is of type GregorianCalendar
             if (value instanceof Calendar) {
                 Calendar calendar = (Calendar) value;
                 return dateFormatter.format(calendar.getTime());
@@ -36,7 +35,6 @@ class DateLabelFormatter extends JFormattedTextField.AbstractFormatter {
     }
 }
 
-
 public class BillsAndDatesPanel extends JPanel {
 
     private JTable billsTable;
@@ -45,27 +43,26 @@ public class BillsAndDatesPanel extends JPanel {
     public BillsAndDatesPanel(Main mainFrame) {
         setLayout(new BorderLayout());
 
-        // Create tabs
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Add Bill", createAddBillPanel());
         tabbedPane.addTab("Bills Overview", createBillsOverviewPanel());
 
         add(tabbedPane, BorderLayout.CENTER);
+
+        startDueDateNotificationTask();
     }
 
     private JPanel createAddBillPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // Spacing around components
+        gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Set a larger font size
         Font labelFont = new Font("Arial", Font.PLAIN, 16);
         Font textFieldFont = new Font("Arial", Font.PLAIN, 16);
         Font buttonFont = new Font("Arial", Font.BOLD, 16);
 
-        // Components for bill entry
         JTextField billNameField = new JTextField(20);
         billNameField.setFont(textFieldFont);
         JTextField amountField = new JTextField(20);
@@ -77,22 +74,18 @@ public class BillsAndDatesPanel extends JPanel {
         JComboBox<String> domainComboBox = new JComboBox<>(domains);
         domainComboBox.setFont(textFieldFont);
 
-        // Buttons for bill operations
         JButton addBillButton = new JButton("Add Bill");
         JButton removeBillButton = new JButton("Remove Bill");
         JButton markAsPaidButton = new JButton("Mark as Paid");
 
-        // Set font for buttons
         addBillButton.setFont(buttonFont);
         removeBillButton.setFont(buttonFont);
         markAsPaidButton.setFont(buttonFont);
 
-        // Add action listeners for buttons
         addBillButton.addActionListener(e -> addBill(billNameField.getText(), amountField.getText(), datePicker.getJFormattedTextField().getText(), (String) domainComboBox.getSelectedItem()));
         removeBillButton.addActionListener(e -> removeBill(billNameField.getText()));
         markAsPaidButton.addActionListener(e -> markAsPaid(billNameField.getText()));
 
-        // Arrange components using GridBagConstraints
         gbc.gridx = 0;
         gbc.gridy = 0;
         panel.add(new JLabel("Bill Name:"), gbc);
@@ -121,21 +114,19 @@ public class BillsAndDatesPanel extends JPanel {
         gbc.gridx = 1;
         panel.add(domainComboBox, gbc);
 
-        // Add buttons
         gbc.gridx = 0;
         gbc.gridy = 4;
-        gbc.gridwidth = 2; // Span both columns for buttons
-        JPanel buttonPanel = new JPanel(); // For button layout
+        gbc.gridwidth = 2;
+        JPanel buttonPanel = new JPanel();
         buttonPanel.add(addBillButton);
         buttonPanel.add(removeBillButton);
         buttonPanel.add(markAsPaidButton);
         panel.add(buttonPanel, gbc);
 
-        // Add picture placeholder (you can set an actual image here)
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 2;
-        JLabel pictureLabel = new JLabel(new ImageIcon("E:/SEMESTER SUBJECTS/3rd SEMESTER/ADVANCE OOPS/MINI PROJECT/budget_app/Photos/bills.jpg")); // Update the path to your image
+        JLabel pictureLabel = new JLabel(new ImageIcon("E:/SEMESTER SUBJECTS/3rd SEMESTER/ADVANCE OOPS/MINI PROJECT/budget_app/Photos/bills.jpg"));
         panel.add(pictureLabel, gbc);
 
         return panel;
@@ -148,7 +139,7 @@ public class BillsAndDatesPanel extends JPanel {
         billsTable = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(billsTable);
         panel.add(scrollPane, BorderLayout.CENTER);
-        loadBillsIntoTable(); // Load existing bills from database
+        loadBillsIntoTable();
         return panel;
     }
 
@@ -172,10 +163,9 @@ public class BillsAndDatesPanel extends JPanel {
             statement.setDate(2, Date.valueOf(dueDate));
             statement.setBigDecimal(3, new BigDecimal(amount));
             statement.setString(4, domain);
-            statement.setString(5, "Unpaid"); // Default status
+            statement.setString(5, "Unpaid");
             statement.executeUpdate();
 
-            // Refresh the table
             loadBillsIntoTable();
             JOptionPane.showMessageDialog(this, "Bill added successfully!");
         } catch (SQLException e) {
@@ -190,7 +180,7 @@ public class BillsAndDatesPanel extends JPanel {
 
             statement.setString(1, billName);
             statement.executeUpdate();
-            loadBillsIntoTable(); // Refresh the table
+            loadBillsIntoTable();
             JOptionPane.showMessageDialog(this, "Bill removed successfully!");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -204,7 +194,7 @@ public class BillsAndDatesPanel extends JPanel {
 
             statement.setString(1, billName);
             statement.executeUpdate();
-            loadBillsIntoTable(); // Refresh the table
+            loadBillsIntoTable();
             JOptionPane.showMessageDialog(this, "Bill marked as paid!");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -217,7 +207,7 @@ public class BillsAndDatesPanel extends JPanel {
              PreparedStatement statement = connection.prepareStatement("SELECT * FROM billsanddatesPanel");
              ResultSet resultSet = statement.executeQuery()) {
 
-            tableModel.setRowCount(0); // Clear existing rows
+            tableModel.setRowCount(0);
             while (resultSet.next()) {
                 Object[] row = new Object[]{
                         resultSet.getInt("id"),
@@ -236,14 +226,50 @@ public class BillsAndDatesPanel extends JPanel {
 
     private Connection getConnection() {
         try {
-            String url = "jdbc:mysql://localhost:3306/finwise"; // Update with your DB URL
+            String url = "jdbc:mysql://localhost:3306/finwise";
             Properties props = new Properties();
-            props.put("user", "root"); // Update with your DB username
-            props.put("password", "My#music135"); // Update with your DB password
+            props.put("user", "root");
+            props.put("password", "My#music135");
             return DriverManager.getConnection(url, props);
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    private void startDueDateNotificationTask() {
+        Timer timer = new Timer(true);
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                checkForDueBills();
+            }
+        }, 0, 24 * 60 * 60 * 1000);
+    }
+
+    private void checkForDueBills() {
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement("SELECT bill_name, due_date FROM billsanddatesPanel WHERE status = 'Unpaid'");
+             ResultSet resultSet = statement.executeQuery()) {
+
+            Date currentDate = new Date(System.currentTimeMillis());
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(currentDate);
+
+            while (resultSet.next()) {
+                Date dueDate = resultSet.getDate("due_date");
+                cal.setTime(dueDate);
+                long diffInMillis = dueDate.getTime() - currentDate.getTime();
+                long daysDiff = diffInMillis / (24 * 60 * 60 * 1000);
+
+                if (daysDiff == 1) {
+                    JOptionPane.showMessageDialog(this, "Reminder: Bill " + resultSet.getString("bill_name") + " is due tomorrow.");
+                } else if (daysDiff == 0) {
+                    JOptionPane.showMessageDialog(this, "Reminder: Bill " + resultSet.getString("bill_name") + " is due today.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }

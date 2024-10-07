@@ -26,10 +26,11 @@ public class Main extends JFrame {
         contentPanel.add(createReportPanel(), "Report");
         contentPanel.add(new BillsAndDatesPanel(this), "Bills & Dates");
         contentPanel.add(createPredictionPanel(), "Prediction");
+        contentPanel.add(createSavingsPanel(), "Savings"); // Add Savings Panel
         contentPanel.add(createSettingsPanel(), "Setting");
 
         add(contentPanel, BorderLayout.CENTER);
-        cardLayout.show(contentPanel, "Dashboard");
+        cardLayout.show(contentPanel, "Setting");
     }
 
     private JPanel createSidebar() {
@@ -67,7 +68,7 @@ public class Main extends JFrame {
 
         sidebar.add(Box.createVerticalStrut(20));
 
-        String[] menuItems = {"Dashboard", "Report", "Bills & Dates", "Prediction", "Setting"};
+        String[] menuItems = {"Dashboard", "Report", "Bills & Dates", "Prediction", "Savings", "Setting"};
         for (String item : menuItems) {
             JButton button = new JButton(item);
             button.setForeground(Color.WHITE);
@@ -89,6 +90,9 @@ public class Main extends JFrame {
                         break;
                     case "Prediction":
                         cardLayout.show(contentPanel, "Prediction");
+                        break;
+                    case "Savings":
+                        cardLayout.show(contentPanel, "Savings"); // Switch to Savings panel
                         break;
                     case "Setting":
                         cardLayout.show(contentPanel, "Setting");
@@ -116,6 +120,10 @@ public class Main extends JFrame {
 
     private JPanel createPredictionPanel() {
         return new PredictionPanel();
+    }
+
+    private JPanel createSavingsPanel() {
+        return new SavingsPanel(); // Connect the Savings panel
     }
 
     private JPanel createSettingsPanel() {
